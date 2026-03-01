@@ -319,6 +319,7 @@
 // e.g. "https://your-app.vercel.app"
 // Leave empty to test locally with a mock response
 const API_BASE = "";
+const DEBUG_ALIGN = false;
 // ─────────────────────────────────────────────
 
 const COLORS = ["#1a3a5c","#4a3060","#2d5a27","#5a2d27","#4a4020","#1a4a4a","#5a4a1a","#2d4a5a"];
@@ -363,6 +364,7 @@ function seed() {
 
 let employees=[], shifts=[], nextEid=1, nextSid=1, weekOff=0, editSid=null;
 loadData();
+if (DEBUG_ALIGN) console.log("[align] running");
 
 // ── Helpers ──
 function hrs(s)     { const [hs,ms]=s.start.split(":").map(Number),[he,me]=s.end.split(":").map(Number); return Math.max(0,(he+me/60)-(hs+ms/60)); }
