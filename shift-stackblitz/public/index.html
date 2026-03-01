@@ -21,6 +21,8 @@
   header { background: var(--text); color: #fff; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
   .logo { font-family: var(--mono); font-size: 18px; font-weight: 600; letter-spacing: -0.5px; }
   .logo span { color: var(--accent); }
+  .brand-wrap { display: flex; align-items: center; gap: 12px; }
+  .codex-live-badge { background: #ffea00; color: #111; font-weight: 800; padding: 6px 10px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.28); font-family: var(--mono); font-size: 12px; line-height: 1; }
   .week-nav { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 13px; color: #ccc; }
   .week-nav button { background: none; border: 1px solid #444; color: #fff; width: 28px; height: 28px; cursor: pointer; font-size: 14px; border-radius: 3px; transition: all 0.15s; }
   .week-nav button:hover { border-color: #fff; background: #333; }
@@ -47,6 +49,7 @@
 
   /* ── App Body ── */
   .app-body { display: flex; height: calc(100vh - 52px - 49px); overflow: hidden; }
+  .build-note { position: fixed; left: 12px; bottom: 10px; font-family: var(--mono); font-size: 11px; color: #5d5a54; background: rgba(255,255,255,0.86); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; z-index: 120; }
   .sidebar { width: 200px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; }
   .sidebar-header { height: var(--headH); padding: 0 14px; font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); display: flex; align-items: center; box-sizing: border-box; }
   .employee-row { height: var(--rowH); padding: 0 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; transition: background 0.1s; box-sizing: border-box; background: rgba(255,0,0,0.05); }
@@ -195,7 +198,10 @@
 <body>
 
 <header>
-  <div class="logo">sh<span>i</span>ft</div>
+  <div class="brand-wrap">
+    <div class="logo">sh<span>i</span>ft</div>
+    <div class="codex-live-badge">CODEX LIVE ✅ 2026-03-01</div>
+  </div>
   <div class="week-nav">
     <button onclick="changeWeek(-1)">‹</button>
     <span id="weekLabel">—</span>
@@ -312,6 +318,7 @@
 </div>
 
 <div class="toast" id="toast">✓ Saved</div>
+<div class="build-note">build: CODEX-LIVE-20260301-0212</div>
 
 <script>
 // ─────────────────────────────────────────────
