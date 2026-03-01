@@ -317,6 +317,7 @@
 // e.g. "https://your-app.vercel.app"
 // Leave empty to test locally with a mock response
 const API_BASE = "";
+const DEBUG_ALIGN = false;
 // ─────────────────────────────────────────────
 
 const COLORS = ["#1a3a5c","#4a3060","#2d5a27","#5a2d27","#4a4020","#1a4a4a","#5a4a1a","#2d4a5a"];
@@ -361,6 +362,7 @@ function seed() {
 
 let employees=[], shifts=[], nextEid=1, nextSid=1, weekOff=0, editSid=null;
 loadData();
+if (DEBUG_ALIGN) console.log("[align] running");
 
 // ── Helpers ──
 function hrs(s)     { const [hs,ms]=s.start.split(":").map(Number),[he,me]=s.end.split(":").map(Number); return Math.max(0,(he+me/60)-(hs+ms/60)); }
@@ -388,13 +390,52 @@ function flash(msg="✓ Saved") {
 
 // ── Render ──
 
+function drawAlignDebugLine(id, top, color) {
+  let line=document.getElementById(id);
+  if(!line){
+    line=document.createElement("div");
+    line.id=id;
+    line.style.position="fixed";
+    line.style.left="0";
+    line.style.width="100vw";
+    line.style.height="1px";
+    line.style.pointerEvents="none";
+    line.style.zIndex="9999";
+    line.style.background=color;
+    document.body.appendChild(line);
+  }
+  line.style.top=`${top}px`;
+}
+
+function updateAlignDebugLines() {
+  if(!DEBUG_ALIGN){
+    document.getElementById("align-line-grid")?.remove();
+    document.getElementById("align-line-sidebar")?.remove();
+    return;
+  }
+  const firstGridRow=document.querySelector("#scheduleGrid .grid-cell");
+  const firstSidebarRow=document.querySelector("#sidebarList .employee-row");
+  if(firstGridRow) drawAlignDebugLine("align-line-grid", firstGridRow.getBoundingClientRect().top, "#ff0000");
+  if(firstSidebarRow) drawAlignDebugLine("align-line-sidebar", firstSidebarRow.getBoundingClientRect().top, "#ff0000");
+}
+
 function syncLayoutHeights() {
   const root=document.documentElement;
   const firstGridRow=document.querySelector("#scheduleGrid .grid-cell");
-  if (firstGridRow) root.style.setProperty("--rowH", `${firstGridRow.offsetHeight}px`);
+  if (firstGridRow) {
+    const rowH=firstGridRow.getBoundingClientRect().height;
+    root.style.setProperty("--rowH", `${rowH}px`);
+    if (DEBUG_ALIGN) console.log(`[align] --rowH=${rowH}`);
+  }
 
   const firstDayHeader=document.querySelector("#scheduleGrid .day-header");
-  if (firstDayHeader) root.style.setProperty("--headH", `${firstDayHeader.offsetHeight}px`);
+  if (firstDayHeader) {
+    const headH=firstDayHeader.getBoundingClientRect().height;
+    root.style.setProperty("--headH", `${headH}px`);
+    if (DEBUG_ALIGN) console.log(`[align] --headH=${headH}`);
+  }
+
+  updateAlignDebugLines();
 }
 
 function render() {
@@ -462,6 +503,7 @@ function renderGrid() {
     });
   }
   document.getElementById("scheduleGrid").innerHTML=html;
+  if (DEBUG_ALIGN) console.log("[align] running");
 }
 
 function renderDrawer() {
@@ -753,6 +795,7 @@ function showPublishResults(results){
 function escHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 window.addEventListener("resize", () => requestAnimationFrame(syncLayoutHeights));
+window.addEventListener("scroll", () => { if (DEBUG_ALIGN) requestAnimationFrame(updateAlignDebugLines); }, { passive: true });
 
 render();
 </script>
