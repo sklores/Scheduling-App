@@ -58,7 +58,7 @@
 
   /* ── Grid ── */
   .grid-wrap { flex: 1; overflow: auto; }
-  .schedule-grid { min-width: 700px; display: grid; grid-template-columns: repeat(7, 1fr); }
+  .schedule-grid { min-width: 900px; display: grid; grid-template-columns: 190px repeat(7, 1fr); }
   .day-header { padding: 8px 10px; text-align: center; border-right: 1px solid var(--border); border-bottom: 2px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 10; }
   .day-header:last-child { border-right: none; }
   .day-name { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
@@ -219,10 +219,6 @@
 </div>
 
 <div class="app-body">
-  <div class="sidebar">
-    <div class="sidebar-header">Staff</div>
-    <div id="sidebarList"></div>
-  </div>
   <div class="grid-wrap">
     <div class="schedule-grid" id="scheduleGrid"></div>
   </div>
