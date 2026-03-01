@@ -49,7 +49,9 @@
   .app-body { display: flex; height: calc(100vh - 52px - 49px); overflow: hidden; }
   .sidebar { width: 200px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; }
   .sidebar-header { height: var(--headH); padding: 0 14px; font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); display: flex; align-items: center; box-sizing: border-box; }
-  .employee-row { height: var(--rowH); padding: 0 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; transition: background 0.1s; box-sizing: border-box; }
+  .employee-row { height: var(--rowH); padding: 0 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; transition: background 0.1s; box-sizing: border-box; background: rgba(255,0,0,0.05); }
+  .employee-row.first-row-debug { border-top: 2px solid red; }
+  .grid-cell.first-row-debug { border-top: 2px solid red; } /* DEBUG ALIGN */
   .employee-row:hover { background: var(--bg); }
   .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; color: #fff; }
   .emp-name { font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -390,52 +392,21 @@ function flash(msg="✓ Saved") {
 
 // ── Render ──
 
-function drawAlignDebugLine(id, top, color) {
-  let line=document.getElementById(id);
-  if(!line){
-    line=document.createElement("div");
-    line.id=id;
-    line.style.position="fixed";
-    line.style.left="0";
-    line.style.width="100vw";
-    line.style.height="1px";
-    line.style.pointerEvents="none";
-    line.style.zIndex="9999";
-    line.style.background=color;
-    document.body.appendChild(line);
-  }
-  line.style.top=`${top}px`;
-}
-
-function updateAlignDebugLines() {
-  if(!DEBUG_ALIGN){
-    document.getElementById("align-line-grid")?.remove();
-    document.getElementById("align-line-sidebar")?.remove();
-    return;
-  }
-  const firstGridRow=document.querySelector("#scheduleGrid .grid-cell");
-  const firstSidebarRow=document.querySelector("#sidebarList .employee-row");
-  if(firstGridRow) drawAlignDebugLine("align-line-grid", firstGridRow.getBoundingClientRect().top, "#ff0000");
-  if(firstSidebarRow) drawAlignDebugLine("align-line-sidebar", firstSidebarRow.getBoundingClientRect().top, "#ff0000");
-}
-
 function syncLayoutHeights() {
   const root=document.documentElement;
   const firstGridRow=document.querySelector("#scheduleGrid .grid-cell");
   if (firstGridRow) {
     const rowH=firstGridRow.getBoundingClientRect().height;
     root.style.setProperty("--rowH", `${rowH}px`);
-    if (DEBUG_ALIGN) console.log(`[align] --rowH=${rowH}`);
+    document.querySelectorAll("#sidebarList .employee-row").forEach(row=>{ row.style.height=`${rowH}px`; });
+    console.log("[ROW SYNC]", rowH); // DEBUG ALIGN
   }
 
   const firstDayHeader=document.querySelector("#scheduleGrid .day-header");
   if (firstDayHeader) {
     const headH=firstDayHeader.getBoundingClientRect().height;
     root.style.setProperty("--headH", `${headH}px`);
-    if (DEBUG_ALIGN) console.log(`[align] --headH=${headH}`);
   }
-
-  updateAlignDebugLines();
 }
 
 function render() {
@@ -454,9 +425,9 @@ function render() {
 function renderSidebar() {
   document.getElementById("sidebarList").innerHTML = employees.length===0
     ? `<div class="empty-state">No staff yet.<br>Open Manage Staff →</div>`
-    : employees.map(e=>{
+    : employees.map((e,i)=>{
         const h=empHrs(e.id), c=empCost(e.id);
-        return `<div class="employee-row">
+        return `<div class="employee-row${i===0?" first-row-debug":""}">
           <div class="avatar" style="background:${e.color}">${ini(e.name)}</div>
           <div style="min-width:0;flex:1">
             <div class="emp-name">${e.name}</div>
@@ -490,7 +461,7 @@ function renderGrid() {
     employees.forEach((emp,ri)=>{
       for(let d=0;d<7;d++){
         const cs=shifts.filter(s=>s.empId===emp.id&&s.day===d);
-        html+=`<div class="grid-cell${ri%2?" alt":""}" ondblclick="openAddShift(${emp.id},${d})">
+        html+=`<div class="grid-cell${ri%2?" alt":""}${ri===0?" first-row-debug":""}" ondblclick="openAddShift(${emp.id},${d})">
           ${cs.map(s=>`
             <div class="shift-block" data-role="${emp.role}" onclick="openEditShift(${s.id})">
               <button class="del-btn" onclick="event.stopPropagation();deleteShift(${s.id})">×</button>
@@ -503,8 +474,7 @@ function renderGrid() {
     });
   }
   document.getElementById("scheduleGrid").innerHTML=html;
-  if (DEBUG_ALIGN) console.log("[align] running");
-}
+  }
 
 function renderDrawer() {
   const totalH=shifts.reduce((a,s)=>a+hrs(s),0);
@@ -514,7 +484,7 @@ function renderDrawer() {
   document.getElementById("drawerCount").textContent=employees.length;
   document.getElementById("staffList").innerHTML = employees.length===0
     ? `<div class="empty-state">No employees yet.<br>Add one above.</div>`
-    : employees.map(e=>{
+    : employees.map((e,i)=>{
         const h=empHrs(e.id), c=empCost(e.id);
         const hasPhone=!!(e.phone&&e.phone.trim());
         return `<div class="staff-item">
@@ -795,7 +765,6 @@ function showPublishResults(results){
 function escHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 window.addEventListener("resize", () => requestAnimationFrame(syncLayoutHeights));
-window.addEventListener("scroll", () => { if (DEBUG_ALIGN) requestAnimationFrame(updateAlignDebugLines); }, { passive: true });
 
 render();
 </script>
