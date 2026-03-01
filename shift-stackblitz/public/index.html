@@ -13,6 +13,7 @@
     --accent: #c84b2f; --accent-light: #fde8e3;
     --green: #2d5a27; --green-light: #e8f5e3;
     --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+    --rowH: 72px; --headH: 69px;
   }
   body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
 
@@ -47,8 +48,8 @@
   /* ── App Body ── */
   .app-body { display: flex; height: calc(100vh - 52px - 49px); overflow: hidden; }
   .sidebar { width: 200px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; }
-  .sidebar-header { padding: 10px 14px; font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); }
-  .employee-row { height: 72px; padding: 0 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; transition: background 0.1s; box-sizing: border-box; }
+  .sidebar-header { height: var(--headH); padding: 0 14px; font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); display: flex; align-items: center; box-sizing: border-box; }
+  .employee-row { height: var(--rowH); padding: 0 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; transition: background 0.1s; box-sizing: border-box; }
   .employee-row:hover { background: var(--bg); }
   .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; color: #fff; }
   .emp-name { font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -59,13 +60,13 @@
   /* ── Grid ── */
   .grid-wrap { flex: 1; overflow: auto; }
   .schedule-grid { min-width: 700px; display: grid; grid-template-columns: repeat(7, 1fr); }
-  .day-header { padding: 8px 10px; text-align: center; border-right: 1px solid var(--border); border-bottom: 2px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 10; }
+  .day-header { height: var(--headH); padding: 8px 10px; text-align: center; border-right: 1px solid var(--border); border-bottom: 2px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 10; box-sizing: border-box; }
   .day-header:last-child { border-right: none; }
   .day-name { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
   .day-date { font-size: 18px; font-weight: 600; line-height: 1.2; }
   .day-header.today .day-date { color: var(--accent); }
   .day-total { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-  .grid-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); min-height: 72px; padding: 6px; background: var(--surface); transition: background 0.1s; }
+  .grid-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); min-height: var(--rowH); padding: 6px; background: var(--surface); transition: background 0.1s; box-sizing: border-box; }
   .grid-cell:last-child { border-right: none; }
   .grid-cell:hover { background: #fafaf8; }
   .grid-cell.alt { background: #faf9f6; }
@@ -386,6 +387,16 @@ function flash(msg="✓ Saved") {
 }
 
 // ── Render ──
+
+function syncLayoutHeights() {
+  const root=document.documentElement;
+  const firstGridRow=document.querySelector("#scheduleGrid .grid-cell");
+  if (firstGridRow) root.style.setProperty("--rowH", `${firstGridRow.offsetHeight}px`);
+
+  const firstDayHeader=document.querySelector("#scheduleGrid .day-header");
+  if (firstDayHeader) root.style.setProperty("--headH", `${firstDayHeader.offsetHeight}px`);
+}
+
 function render() {
   const ws=weekStart(weekOff), we=new Date(ws); we.setDate(ws.getDate()+6);
   const opt={month:"short",day:"numeric"};
@@ -396,6 +407,7 @@ function render() {
   document.getElementById("statShifts").textContent=shifts.length;
   document.getElementById("statCost").textContent=fmtD(totalC);
   renderSidebar(); renderGrid(); renderDrawer();
+  requestAnimationFrame(syncLayoutHeights);
 }
 
 function renderSidebar() {
@@ -739,6 +751,8 @@ function showPublishResults(results){
 }
 
 function escHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+window.addEventListener("resize", () => requestAnimationFrame(syncLayoutHeights));
 
 render();
 </script>
